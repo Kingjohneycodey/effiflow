@@ -1,3 +1,5 @@
+import { useState, ChangeEvent, FormEvent, useEffect, useRef } from "react";
+import { FaSpinner } from "react-icons/fa";
 
 import demoImage1 from "../../assets/demo1.svg";
 import demoImage2 from "../../assets/demo2.svg";
@@ -13,8 +15,204 @@ import heroVector2 from "../../assets/hero-vector2.svg";
 import heroVector3 from "../../assets/hero-vector3.svg";
 
 import box from "../../assets/box.svg";
+import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Modal from "../../components/ui/Modal";
+import { calculateTimeLeft } from "../../utils/timer";
+import { useLocation } from "react-router-dom";
+
+// Define the shape of the form data
+interface FormData {
+  firstname: string;
+  lastname: string;
+  email: string;
+  message: string;
+}
+
+interface FormData2 {
+  name: string;
+  email: string;
+}
 
 const Home = () => {
+  const [formData, setFormData] = useState<FormData>({
+    firstname: "",
+    lastname: "",
+    email: "",
+    message: "",
+  });
+  const [formData2, setFormData2] = useState<FormData2>({
+    name: "",
+    email: "",
+  });
+
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  }>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  // Set your target date here
+  const targetDate = new Date("2024-09-31T23:59:59");
+
+  useEffect(() => {
+    const updateTimer = () => {
+      setTimeLeft(calculateTimeLeft(targetDate));
+    };
+
+    // Initial call
+    updateTimer();
+
+    // Update timer every second
+    const intervalId = setInterval(updateTimer, 1000);
+
+    // Clear interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [targetDate]);
+
+  const location = useLocation();
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (location.state?.scrollTo === 'contact') {
+      ref.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [location.state]);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  // Handle form input changes
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ): void => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleChange2 = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ): void => {
+    setFormData2({ ...formData2, [e.target.name]: e.target.value });
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (!formData.firstname || formData.firstname == "" || formData.firstname == " ") {
+      toast.error("Please fill in your firstname");
+      setLoading(false);
+      return;
+    } else if (!formData.lastname || formData.lastname == "" || formData.lastname == " ") {
+      toast.error("Please fill in your lastname");
+      setLoading(false);
+      return;
+    } else if (!formData.message || formData.message == "" || formData.message == " ") {
+      toast.error("Please fill in your message");
+      setLoading(false);
+      return;
+    } else if (
+      !formData.email.trim() ||
+      formData.email == "" ||
+      formData.email == " "
+    ) {
+      toast.error("Please fill in your email");
+      setLoading(false);
+      return;
+    } else if (!emailRegex.test(formData.email)) {
+      toast.error("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "https://sheetdb.io/api/v1/5reb20jb9zpdd",
+        {
+          Firstname: formData.firstname,
+          Lastname: formData.lastname,
+          Email: formData.email,
+          Message: formData.message,
+        }
+      );
+
+      if (response.status === 201 || response.status === 200) {
+        toast.success("Data submitted successfully!");
+        setFormData({ firstname: "", lastname: "", email: "", message: "" });
+        closeModal();
+      } else {
+        toast.error("Failed to submit data");
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Regular expression for email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Handle form submission
+  const handleSubmit2 = async (
+    e: FormEvent<HTMLFormElement>
+  ): Promise<void> => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (!formData2.name || formData2.name == "" || formData2.name == " ") {
+      toast.error("Please fill in your name");
+      setLoading(false);
+      return;
+    } else if (
+      !formData2.email.trim() ||
+      formData2.email == "" ||
+      formData2.email == " "
+    ) {
+      toast.error("Please fill in your email");
+      setLoading(false);
+      return;
+    } else if (!emailRegex.test(formData2.email)) {
+      toast.error("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "https://sheetdb.io/api/v1/6mk4o1ecuwxio",
+        {
+          Name: formData2.name,
+          Email: formData2.email,
+        }
+      );
+
+      if (response.status === 201 || response.status === 200) {
+        toast.success("Sent successfully!");
+        setFormData2({ name: "", email: "" });
+        closeModal();
+      } else {
+        toast.error("Failed to submit data");
+      }
+    } catch (error) {
+      toast.error("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div>
       <section className="text-center h-[90vh] flex items-center justify-center relative">
@@ -28,28 +226,39 @@ const Home = () => {
             EffiFlow, get access and discover the future of product management.
           </p>
 
-          <button className="btn primary-btn bg-[var(--primary-color)] py-2 px-4 text-white rounded-2xl">
+          <button
+            className="btn primary-btn bg-[var(--primary-color)] py-2 px-4 text-white rounded-2xl"
+            onClick={openModal}
+          >
             Join Waitlist
           </button>
 
           <div className="mt-10 flex items-center justify-between">
             <div>
-              <p className="text-4xl font-bold text-gray-800">40</p>
+              <p className="text-4xl font-bold text-gray-800">
+                {timeLeft.days.toString().padStart(2, "0")}
+              </p>
               <p className="text-gray-600">Days</p>
             </div>
 
             <div>
-              <p className="text-4xl font-bold text-gray-800">20</p>
+              <p className="text-4xl font-bold text-gray-800">
+                {timeLeft.hours.toString().padStart(2, "0")}
+              </p>
               <p className="text-gray-600">Hours</p>
             </div>
 
             <div>
-              <p className="text-4xl font-bold text-gray-800">03</p>
+              <p className="text-4xl font-bold text-gray-800">
+                {timeLeft.minutes.toString().padStart(2, "0")}
+              </p>
               <p className="text-gray-600">Minutes</p>
             </div>
 
             <div>
-              <p className="text-4xl font-bold text-gray-800">00</p>
+              <p className="text-4xl font-bold text-gray-800">
+                {timeLeft.seconds.toString().padStart(2, "0")}
+              </p>
               <p className="text-gray-600">Seconds</p>
             </div>
           </div>
@@ -116,7 +325,11 @@ const Home = () => {
           <div className="mt-8 md:grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-[var(--secondary-color)] py-5 px-3 rounded-3xl flex items-center gap-4 mb-6">
               <div>
-                <img src={featureIcon1} className="border border-black rounded-full w-[100px]" alt="feature icon" />
+                <img
+                  src={featureIcon1}
+                  className="border border-black rounded-full w-[100px]"
+                  alt="feature icon"
+                />
               </div>
               <div>
                 <h4 className="font-bold text-gray-800">PRD</h4>
@@ -128,38 +341,57 @@ const Home = () => {
 
             <div className="bg-[var(--secondary-color)] py-5 px-3 rounded-3xl flex items-center gap-4 mb-6">
               <div>
-                <img src={featureIcon2} className="border border-black rounded-full w-[100px]" alt="feature icon" />
+                <img
+                  src={featureIcon2}
+                  className="border border-black rounded-full w-[100px]"
+                  alt="feature icon"
+                />
               </div>
               <div>
-                <h4 className="font-bold text-gray-800">Flowcharts and 
-                workflows</h4>
+                <h4 className="font-bold text-gray-800">
+                  Flowcharts and workflows
+                </h4>
                 <small className="text-gray-600">
-                Create Intuitive flowchart and
-                Visualization of product workflows
+                  Create Intuitive flowchart and Visualization of product
+                  workflows
                 </small>
               </div>
             </div>
 
             <div className="bg-[var(--secondary-color)] py-5 px-3 rounded-3xl flex items-center gap-4 mb-6">
               <div>
-                <img src={featureIcon3} className="rounded-full w-[150px] md:w-[150px]" alt="feature icon" />
+                <img
+                  src={featureIcon3}
+                  className="rounded-full w-[150px] md:w-[150px]"
+                  alt="feature icon"
+                />
               </div>
               <div>
-                <h4 className="font-bold text-gray-800">Milestone Generation</h4>
+                <h4 className="font-bold text-gray-800">
+                  Milestone Generation
+                </h4>
                 <small className="text-gray-600">
-                Set clear goals, prioritize wild numbers of features, and create strategic roadmaps with ease.
+                  Set clear goals, prioritize wild numbers of features, and
+                  create strategic roadmaps with ease.
                 </small>
               </div>
             </div>
 
             <div className="bg-[var(--secondary-color)] py-5 px-3 rounded-3xl flex items-center gap-4 mb-6">
               <div>
-                <img src={featureIcon4} className="w-[150px] rounded-full " alt="feature icon" />
+                <img
+                  src={featureIcon4}
+                  className="w-[150px] rounded-full "
+                  alt="feature icon"
+                />
               </div>
               <div>
-                <h4 className="font-bold text-gray-800">Wireframe Generation</h4>
+                <h4 className="font-bold text-gray-800">
+                  Wireframe Generation
+                </h4>
                 <small className="text-gray-600">
-                Set clear goals, prioritize wild numbers of features, and create strategic roadmaps with ease.
+                  Set clear goals, prioritize wild numbers of features, and
+                  create strategic roadmaps with ease.
                 </small>
               </div>
             </div>
@@ -255,43 +487,122 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="px-[5%] py-[20%] md:p-[5%] flex items-center justify-center min-h-[70vh]" id="contact">
+      <section
+        className="px-[5%] py-[20%] md:p-[5%] flex items-center justify-center min-h-[70vh]"
+        id="contact"  ref={ref}
+      >
         <div className="max-w-[500px]  m-auto w-[90%]">
-          <form action="">
-
-
+          <form onSubmit={handleSubmit}>
             <div className="md:grid md:grid-cols-2 gap-4">
               <div className="mb-4">
                 <label htmlFor="">First Name</label>
-                <input type="text" className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full" />
+                <input
+                  type="text"
+                  className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full"
+                  name="firstname"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                />
               </div>
 
               <div className="mb-4">
                 <label htmlFor="">Last Name</label>
-                <input type="text" className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full" />
+                <input
+                  type="text"
+                  className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full"
+                  name="lastname"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                />
               </div>
-
             </div>
 
             <div className="mb-4">
-                <label htmlFor="">Email</label>
-                <input type="text" className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full" />
-              </div>
+              <label htmlFor="">Email</label>
+              <input
+                type="text"
+                className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
 
-              <div className="mb-4">
-                <label htmlFor="">Message</label>
+            <div className="mb-4">
+              <label htmlFor="">Message</label>
 
-                <textarea name="" id="" className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full"></textarea>
-              </div>
+              <textarea
+                className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full"
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
+              ></textarea>
+            </div>
 
-              <div className="mt-12">
+            <div className="mt-12">
               <button className="btn primary-btn bg-[var(--primary-color)] py-2 px-4 text-white rounded-3xl w-full">
-        Send Message
-      </button>
-              </div>
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <FaSpinner className="animate-spin mr-2" /> Submitting...
+                  </span>
+                ) : (
+                  " Send Message"
+                )}
+              </button>
+            </div>
           </form>
         </div>
       </section>
+
+      <Modal isOpen={isModalOpen} onClose={closeModal}>
+        <h2 className="text-xl font-bold mb-4">Signup for the waitlist</h2>
+        <div className="max-w-[500px]  m-auto w-[95%]">
+          <form onSubmit={handleSubmit2}>
+            <div className="mb-4">
+              <div className="mb-4">
+                <label htmlFor="">Name</label>
+                <input
+                  type="text"
+                  className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full"
+                  name="name"
+                  value={formData2.name}
+                  onChange={handleChange2}
+                />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label htmlFor="">Email</label>
+              <input
+                type="text"
+                className="border border-gray-400 bg-[var(--secondary-color)] block rounded-md p-1 mt-1 w-full"
+                name="email"
+                value={formData2.email}
+                onChange={handleChange2}
+              />
+            </div>
+
+            <div className="mt-12">
+              <button className="btn primary-btn bg-[var(--primary-color)] py-2 px-4 text-white rounded-3xl w-full">
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <FaSpinner className="animate-spin mr-2" /> Submitting...
+                  </span>
+                ) : (
+                  "Join Waitlist"
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* <button
+          onClick={closeModal}
+          className="mt-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+        >
+          Close Modal
+        </button> */}
+        </div>
+      </Modal>
     </div>
   );
 };

@@ -11,3 +11,7 @@
   --secondary-color: #E4EFE7;
   --primary-color: #064420;
 }
+
+html{
+  scroll-behavior: smooth;
+}
