@@ -21,6 +21,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Modal from "../../components/ui/Modal";
 import { calculateTimeLeft } from "../../utils/timer";
 import { useLocation } from "react-router-dom";
+import Footer from "../../components/layout/Footer";
 
 // Define the shape of the form data
 interface FormData {
@@ -64,7 +65,7 @@ const Home = () => {
   });
 
   // Set your target date here
-  const targetDate = new Date("2024-09-31T23:59:59");
+  const targetDate = new Date("2024-10-04T23:59:59");
 
   useEffect(() => {
     const updateTimer = () => {
@@ -79,14 +80,29 @@ const Home = () => {
 
     // Clear interval on component unmount
     return () => clearInterval(intervalId);
-  }, [targetDate]);
+  }, []);
 
   const location = useLocation();
   const ref = useRef<HTMLDivElement>(null);
+  const ref1 = useRef<HTMLDivElement>(null);
+  const ref2 = useRef<HTMLDivElement>(null);
+  const ref3 = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (location.state?.scrollTo === 'contact') {
       ref.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    if (location.state?.scrollTo === 'home') {
+      ref3.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    if (location.state?.scrollTo === 'features') {
+      ref2.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    if (location.state?.scrollTo === 'about') {
+      ref1.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [location.state]);
 
@@ -215,7 +231,7 @@ const Home = () => {
 
   return (
     <div>
-      <section className="text-center h-[90vh] flex items-center justify-center relative">
+      <section className="text-center h-[90vh] flex items-center justify-center relative" id="home" ref={ref3}>
         <div className="w-[90%] max-w-[500px] mx-auto">
           <h1 className="text-4xl font-bold mb-4">
             Enhance Your Product Management Journey
@@ -312,7 +328,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="min-h-[60vh] flex items-center justify-center py-[5%]">
+      <section className="min-h-[60vh] flex items-center justify-center py-[5%]" id="features" ref={ref2}>
         <div className=" w-[90%] md;">
           <h1 className="text-4xl text-gray-800 font-bold mb-4">
             Key Features
@@ -399,7 +415,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="bg-[var(--secondary-color)] p-[5%]">
+      <section className="bg-[var(--secondary-color)] p-[5%]" id="about" ref={ref1}>
         <div>
           <h1 className="text-4xl text-gray-800 font-bold mb-4">
             Why use EffiFlow
@@ -553,6 +569,8 @@ const Home = () => {
           </form>
         </div>
       </section>
+
+      <Footer openModal={openModal} />
 
       <Modal isOpen={isModalOpen} onClose={closeModal}>
         <h2 className="text-xl font-bold mb-4">Signup for the waitlist</h2>

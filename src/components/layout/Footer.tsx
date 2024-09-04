@@ -1,15 +1,20 @@
-import { FaDiscord, FaFacebook, FaLinkedin, FaXTwitter } from "react-icons/fa6";
+import { FaFacebook, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 import logo from "../../assets/light-logo.svg";
 import { Link } from "react-router-dom";
+import React from "react";
 
-const Footer = () => {
+type FooterProps = {
+  openModal: () => void;
+};
+
+const Footer: React.FC<FooterProps> = ({ openModal }) => {
   return (
     <div className="bg-[#121212] text-white px-[5%] py-[3%]">
       <div className="md:grid md:grid-cols-5 mb-20">
         <div className="col-span-1 mb-8">
           <img src={logo} alt="logo" className="mb-4"  />
 
-          <button className="btn primary-btn border border-white py-2 px-4 text-white rounded-2xl">
+          <button onClick={openModal} className="btn primary-btn border border-white py-2 px-4 text-white rounded-2xl">
             Join Waitlist
           </button>
         </div>
@@ -71,9 +76,11 @@ const Footer = () => {
         <p className="text-center">© 2024 Effiflow. All rights reserved.</p>
 
         <p className="flex items-center justify-between w-[200px] m-auto mb-8">
-          <FaLinkedin /> <FaXTwitter />
-          <FaFacebook />
-          <FaDiscord />{" "}
+          <a href="https://www.linkedin.com/company/effiflow/
+"><FaLinkedin /></a>    <a href="https://www.facebook.com/profile.php?id=61551991505380&mibextid=ZbWKwL"><FaFacebook /></a><a href="https://x.com/EffiFlow?t=cMgYH2KfUyQnDHUZARE1tw"><FaXTwitter /></a>
+          
+          {/* <FaDiscord /> */}
+          {" "}
         </p>
       </div>
     </div>
